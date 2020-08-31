@@ -9,6 +9,7 @@ from sklearn.metrics import confusion_matrix, classification_report, accuracy_sc
 from tensorflow import keras
 from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout, Embedding, LSTM
+from keras.layers import Bidirectional
 from keras import utils
 from keras.preprocessing.text import Tokenizer
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
@@ -128,7 +129,7 @@ class Word2VecKeras(object):
                                    weights=[embedding_matrix],
                                    input_length=self.k_max_sequence_len,
                                    trainable=False))
-        self.k_model.add(LSTM(self.k_lstm_neurons, dropout=0.5, recurrent_dropout=0.2))
+        self.k_model.add(Bidirectional(LSTM(self.k_lstm_neurons, dropout=0.5, recurrent_dropout=0.2)))
         for hidden_layer in self.k_hidden_layer_neurons:
             self.k_model.add(Dense(hidden_layer, activation='relu'))
             self.k_model.add(Dropout(0.2))
@@ -143,8 +144,8 @@ class Word2VecKeras(object):
         logging.info(self.k_model.summary())
 
         # Callbacks
-        early_stopping = EarlyStopping(monitor='acc', patience=6, verbose=0, mode='max')
-        rop = ReduceLROnPlateau(monitor='acc', factor=0.1, patience=3, verbose=1, epsilon=1e-4, mode='max')
+        early_stopping = EarlyStopping(monitor='accuracy', patience=6, verbose=0, mode='max')
+        rop = ReduceLROnPlateau(monitor='accuracy', factor=0.1, patience=3, verbose=1, min_delta=1e-4, mode='max')
         callbacks = [early_stopping, rop]
 
         logging.info("Fit Keras model")
